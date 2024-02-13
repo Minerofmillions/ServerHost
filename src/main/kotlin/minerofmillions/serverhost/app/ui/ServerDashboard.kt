@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import minerofmillions.serverhost.Server
@@ -62,7 +63,7 @@ private fun ColumnScope.ValidDashboard(server: Server) {
                     reverseLayout = true
                 ) {
                     items(revLog) {
-                        Text(it)
+                        Text(it, fontFamily = FontFamily.Monospace)
                     }
                 }
                 Button(server::gatherFavicon) {
