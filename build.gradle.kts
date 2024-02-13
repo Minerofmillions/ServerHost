@@ -45,3 +45,13 @@ tasks.register<Copy>("installAndCopy") {
     from(createDistributable.outputs.files)
     into(providers.environmentVariable("HOST_INSTALL_DIR"))
 }
+
+tasks.register<Zip>("packageApp") {
+    val createDistributable by tasks.getting
+    from(createDistributable.outputs.files)
+
+    destinationDirectory = layout.buildDirectory.dir("releases")
+    archiveBaseName = "server_host_app"
+    archiveAppendix = System.getProperty("os.name") ?: ""
+    archiveExtension = "zip"
+}
