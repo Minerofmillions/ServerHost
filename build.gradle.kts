@@ -40,9 +40,8 @@ compose.desktop {
     }
 }
 
-task<Copy>("installAndCopy") {
-    dependsOn("createDistributable")
-    val appDir = layout.buildDirectory.dir("compose\\binaries\\main\\app")
-    from(appDir)
+tasks.register<Copy>("installAndCopy") {
+    val createDistributable by tasks.getting
+    from(createDistributable.outputs.files)
     into(providers.environmentVariable("HOST_INSTALL_DIR"))
 }
