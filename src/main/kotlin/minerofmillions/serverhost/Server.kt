@@ -2,6 +2,7 @@ package minerofmillions.serverhost
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
+import com.arkivanov.decompose.value.observe
 import com.arkivanov.decompose.value.operator.map
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -11,6 +12,8 @@ import java.io.*
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketTimeoutException
+import kotlin.properties.Delegates
+import kotlin.time.Duration.Companion.minutes
 
 class Server(
     serverDirectory: File,
@@ -25,6 +28,8 @@ class Server(
     private val process = MutableValue(ProcessBuilder("java", "-version").start())
     private lateinit var listener: Job
     private lateinit var logTransfer: Job
+    val autoOff = MutableValue(true)
+    val autoOffDuration = MutableValue(10.minutes.inWholeMilliseconds)
 
     val logShowing = serverState.map { it == ServerState.STARTED || it == ServerState.STOPPING }
     val isErrored = serverState.map { it is ServerState.ERRORED }
@@ -135,6 +140,7 @@ class Server(
             coroutineScope {
                 transfer(process.value.inputReader())
                 transfer(process.value.errorReader())
+                autoOff()
             }
         }
         process.value.onExit().thenRun {
@@ -171,8 +177,6 @@ class Server(
                     toServer.writePacket(Packet.statusRequestPacket())
                     val status = fromServer.readUncompressedPacket()
 
-                    println(status.data.asList())
-
                     val statusData = ByteArrayInputStream(status.data)
                     val (responseStringLength) = statusData.readVarInt()
                     val responseString = statusData.readNBytes(responseStringLength)
@@ -189,6 +193,33 @@ class Server(
             serverLog.value += nextLine
         }
         stream.close()
+    }
+
+    private fun CoroutineScope.autoOff() {
+        var currentJob: Job by Delegates.notNull()
+        autoOff.observe(lifecycle) {
+            if (it) currentJob = launch {
+                var hadNoPlayers = false
+                while (isActive) {
+                    delay(autoOffDuration.value)
+                    val response = pingServer().await() ?: continue
+                    if (response.players.online == 0) {
+                        if (hadNoPlayers) stop()
+                        else hadNoPlayers = true
+                    } else hadNoPlayers = false
+                }
+            }
+            else currentJob.cancel()
+        }
+    }
+
+    fun setAutoOff(active: Boolean) {
+        autoOff.value = active
+    }
+
+    fun setAutoOffDelay(delay: String) {
+        val newDelay = delay.toLongOrNull() ?: return
+        autoOffDuration.value = newDelay
     }
 
     companion object {

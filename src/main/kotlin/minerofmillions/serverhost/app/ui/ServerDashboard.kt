@@ -36,6 +36,8 @@ private fun ErrorDashboard(reason: String) = Column(Modifier.border(2.dp, Materi
 private fun ColumnScope.ValidDashboard(server: Server) {
     val serverState by server.serverState.subscribeAsState()
     val logShowing by server.logShowing.subscribeAsState()
+    val autoOff by server.autoOff.subscribeAsState()
+    val autoOffDelay by server.autoOffDuration.subscribeAsState()
 
     val modifier = Modifier.border(2.dp, MaterialTheme.colors.secondary).run {
         if (logShowing) weight(1f) else height(IntrinsicSize.Min)
@@ -47,6 +49,14 @@ private fun ColumnScope.ValidDashboard(server: Server) {
         Column(Modifier.padding(4.dp)) {
             Text(server.serverName, style = MaterialTheme.typography.h1)
             Text(server.baseDirectory.truncate(50))
+            Row {
+                Text("Auto Off:", Modifier.weight(1f).align(Alignment.CenterVertically))
+                Checkbox(autoOff, server::setAutoOff, Modifier.align(Alignment.CenterVertically))
+                TextField(autoOffDelay.toString(),
+                    server::setAutoOffDelay,
+                    label = { Text("Auto Off Delay") },
+                    trailingIcon = { Text("ms") })
+            }
             Row {
                 Text("Is Active:", Modifier.weight(1f).align(Alignment.CenterVertically))
                 if (serverState != STOPPING) Checkbox(serverState == STARTED, server::setServerActive)
