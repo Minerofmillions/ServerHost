@@ -157,8 +157,14 @@ class Server(
     }
 
     fun gatherFavicon() = coroutineScope.launch {
-        if (serverState.value != ServerState.STARTED) return@launch
-        val favicon = Socket("localhost", portToUse).use { socket ->
+        val favicon = pingServer().await()?.favicon ?: return@launch
+        assert(favicon.startsWith("data:image/png;base64,"))
+        faviconFile.writeText(favicon)
+    }
+
+    private fun pingServer(): Deferred<StatusResponse?> = coroutineScope.async {
+        if (serverState.value != ServerState.STARTED) null
+        else Socket("localhost", portToUse).use { socket ->
             DataInputStream(socket.getInputStream()).use { fromServer ->
                 DataOutputStream(socket.getOutputStream()).use { toServer ->
                     toServer.writePacket(Packet.handshakePacket(765, "localhost", portToUse, false))
@@ -171,12 +177,10 @@ class Server(
                     val (responseStringLength) = statusData.readVarInt()
                     val responseString = statusData.readNBytes(responseStringLength)
 
-                    mapper.readValue(responseString, StatusResponse::class.java).favicon
+                    mapper.readValue(responseString, StatusResponse::class.java)
                 }
             }
-        } ?: return@launch
-        assert(favicon.startsWith("data:image/png;base64,"))
-        faviconFile.writeText(favicon)
+        }
     }
 
     private fun CoroutineScope.transfer(stream: BufferedReader) = launch {
