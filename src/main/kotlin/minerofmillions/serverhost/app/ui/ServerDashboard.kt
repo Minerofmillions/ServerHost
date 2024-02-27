@@ -4,7 +4,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -65,6 +68,8 @@ private fun ColumnScope.ValidDashboard(server: Server) {
             if (logShowing) {
                 val log by server.serverLog.subscribeAsState()
                 val revLog by remember { derivedStateOf { log.asReversed() } }
+                val command by server.command.subscribeAsState()
+
                 Text("Log:")
                 ScrollableColumn(
                     Modifier.weight(1f).fillMaxWidth().border(1.dp, MaterialTheme.colors.secondary),
@@ -76,8 +81,19 @@ private fun ColumnScope.ValidDashboard(server: Server) {
                         Text(it, fontFamily = FontFamily.Monospace)
                     }
                 }
-                Button(server::gatherFavicon) {
-                    Text("Gather Favicon")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Button(server::gatherFavicon) {
+                        Text("Gather Favicon")
+                    }
+                    TextField(command,
+                        server::setCommand,
+                        Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardActions = KeyboardActions { server.sendCommand() }
+                    )
+                    IconButton(onClick = server::sendCommand) {
+                        Icon(Icons.Default.Send, "Send Command")
+                    }
                 }
             }
         }
