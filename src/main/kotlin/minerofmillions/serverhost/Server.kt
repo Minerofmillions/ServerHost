@@ -2,17 +2,17 @@ package minerofmillions.serverhost
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
-import com.arkivanov.decompose.value.observe
+import com.arkivanov.decompose.value.getValue
 import com.arkivanov.decompose.value.operator.map
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.*
 import minerofmillions.utils.splitCommand
 import java.io.*
+import java.net.ConnectException
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketTimeoutException
-import kotlin.properties.Delegates
 import kotlin.time.Duration.Companion.minutes
 
 class Server(
@@ -25,11 +25,15 @@ class Server(
     private val processBuilder = ProcessBuilder().directory(serverDirectory).command(startCommand.splitCommand())
     val serverState = MutableValue<ServerState>(ServerState.STOPPED)
     val serverLog = MutableValue(emptyList<String>())
+    val command = MutableValue("")
+
     private val process = MutableValue(ProcessBuilder("java", "-version").start())
+    private val processWriter = process.map { it.outputWriter() }
     private lateinit var listener: Job
     private lateinit var logTransfer: Job
+
     val autoOff = MutableValue(true)
-    val autoOffDuration = MutableValue(10.minutes.inWholeMilliseconds)
+    val autoOffDuration = MutableValue(5.minutes.inWholeMilliseconds)
 
     val logShowing = serverState.map { it == ServerState.STARTED || it == ServerState.STOPPING }
     val isErrored = serverState.map { it is ServerState.ERRORED }
@@ -55,8 +59,9 @@ class Server(
             val serverPropertiesFile = serverDirectory.resolve("server.properties")
             if (!serverPropertiesFile.exists()) {
                 println("Running server at \"$serverDirectory\" to generate properties.")
-                start()
+                startIgnoreListener()
                 stop()
+                awaitServerStopped()
             }
 
             val properties = readPropertiesFile(serverPropertiesFile).toMutableMap()
@@ -133,11 +138,15 @@ class Server(
     private fun start() {
         if (serverState.value != ServerState.STOPPED) return
         stopListener()
+        startIgnoreListener()
+    }
+
+    private fun startIgnoreListener() {
         serverState.value = ServerState.STARTED
         serverLog.value = emptyList()
         process.value = processBuilder.start()
         logTransfer = coroutineScope.launch {
-            coroutineScope {
+            supervisorScope {
                 transfer(process.value.inputReader())
                 transfer(process.value.errorReader())
                 autoOff()
@@ -154,10 +163,7 @@ class Server(
         if (serverState.value != ServerState.STARTED) return
         serverState.value = ServerState.STOPPING
         coroutineScope.launch {
-            val it = process.value.outputWriter()
-            it.write("stop")
-            it.newLine()
-            it.flush()
+            writeToServer("stop")
             process.value.waitFor()
         }
     }
@@ -168,22 +174,26 @@ class Server(
         faviconFile.writeText(favicon)
     }
 
-    private fun pingServer(): Deferred<StatusResponse?> = coroutineScope.async {
+    private fun CoroutineScope.pingServer() = async {
         if (serverState.value != ServerState.STARTED) null
-        else Socket("localhost", portToUse).use { socket ->
-            DataInputStream(socket.getInputStream()).use { fromServer ->
-                DataOutputStream(socket.getOutputStream()).use { toServer ->
-                    toServer.writePacket(Packet.handshakePacket(765, "localhost", portToUse, false))
-                    toServer.writePacket(Packet.statusRequestPacket())
-                    val status = fromServer.readUncompressedPacket()
+        else try {
+            Socket("localhost", portToUse).use { socket ->
+                DataInputStream(socket.getInputStream()).use { fromServer ->
+                    DataOutputStream(socket.getOutputStream()).use { toServer ->
+                        toServer.writePacket(Packet.handshakePacket(765, "localhost", portToUse, false))
+                        toServer.writePacket(Packet.statusRequestPacket())
+                        val status = fromServer.readUncompressedPacket()
 
-                    val statusData = ByteArrayInputStream(status.data)
-                    val (responseStringLength) = statusData.readVarInt()
-                    val responseString = statusData.readNBytes(responseStringLength)
+                        val statusData = ByteArrayInputStream(status.data)
+                        val (responseStringLength) = statusData.readVarInt()
+                        val responseString = statusData.readNBytes(responseStringLength)
 
-                    mapper.readValue(responseString, StatusResponse::class.java)
+                        mapper.readValue(responseString, StatusResponse::class.java)
+                    }
                 }
             }
+        } catch (e: ConnectException) {
+            null
         }
     }
 
@@ -195,21 +205,21 @@ class Server(
         stream.close()
     }
 
-    private fun CoroutineScope.autoOff() {
-        var currentJob: Job by Delegates.notNull()
-        autoOff.observe(lifecycle) {
-            if (it) currentJob = launch {
-                var hadNoPlayers = false
-                while (isActive) {
-                    delay(autoOffDuration.value)
-                    val response = pingServer().await() ?: continue
-                    if (response.players.online == 0) {
-                        if (hadNoPlayers) stop()
-                        else hadNoPlayers = true
-                    } else hadNoPlayers = false
-                }
+    private fun CoroutineScope.autoOff() = launch {
+        val autoOff by autoOff
+        val autoOffDuration by autoOffDuration
+        var hadNoPlayers = false
+        while (isActive) {
+            if (autoOff) {
+                delay(autoOffDuration)
+                if (pingServer().await()?.players?.online == 0) {
+                    if (hadNoPlayers) stop()
+                    else hadNoPlayers = true
+                } else hadNoPlayers = false
+            } else {
+                hadNoPlayers = false
+                delay(AUTO_OFF_PING_DELAY)
             }
-            else currentJob.cancel()
         }
     }
 
@@ -222,8 +232,26 @@ class Server(
         autoOffDuration.value = newDelay
     }
 
+    fun setCommand(str: String) {
+        this.command.value = str
+    }
+
+    fun sendCommand() {
+        writeToServer(command.value)
+        command.value = ""
+    }
+
+    private fun writeToServer(str: String) {
+        val it = processWriter.value
+        it.write(str)
+        it.newLine()
+        it.flush()
+    }
+
     companion object {
         private val mapper = ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        private const val AUTO_OFF_PING_DELAY: Long = 1000
+
         fun fromConfig(config: ServerConfig, portToUse: Int, context: ComponentContext): Server =
             Server(File(config.baseDirectory), config.startCommand, config.serverName, portToUse, context)
     }
