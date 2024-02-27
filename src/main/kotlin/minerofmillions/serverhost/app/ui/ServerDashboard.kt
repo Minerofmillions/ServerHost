@@ -52,16 +52,16 @@ private fun ColumnScope.ValidDashboard(server: Server) {
         Column(Modifier.padding(4.dp)) {
             Text(server.serverName, style = MaterialTheme.typography.h1)
             Text(server.baseDirectory.truncate(50))
-            Row {
-                Text("Auto Off:", Modifier.weight(1f).align(Alignment.CenterVertically))
-                Checkbox(autoOff, server::setAutoOff, Modifier.align(Alignment.CenterVertically))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Auto Off:", Modifier.weight(1f))
+                Checkbox(autoOff, server::setAutoOff)
                 TextField(autoOffDelay.toString(),
                     server::setAutoOffDelay,
                     label = { Text("Auto Off Delay") },
                     trailingIcon = { Text("ms") })
             }
-            Row {
-                Text("Is Active:", Modifier.weight(1f).align(Alignment.CenterVertically))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Is Active:", Modifier.weight(1f))
                 if (serverState != STOPPING) Checkbox(serverState == STARTED, server::setServerActive)
                 else CircularProgressIndicator()
             }
