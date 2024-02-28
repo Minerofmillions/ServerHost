@@ -130,10 +130,7 @@ data class Packet(val packetId: Int, val data: ByteArray) {
         fun statusResponsePacket(statusResponse: StatusResponse): Packet =
             Packet(
                 0,
-                encodeString(mapper.writeValueAsString(statusResponse)).also { response ->
-                    println("Response Body:")
-                    println(response.joinToString("") { it.toString(16) })
-                })
+                encodeString(mapper.writeValueAsString(statusResponse)))
 
         fun disconnectPacket(text: Text): Packet {
             return Packet(0, encodeString(mapper.writeValueAsString(text)))

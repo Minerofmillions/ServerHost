@@ -1,9 +1,13 @@
 package minerofmillions.serverhost.app
 
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.darkColors
+import androidx.compose.material.lightColors
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.window.*
 import com.arkivanov.decompose.DefaultComponentContext
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,8 +37,12 @@ fun main() {
 
     application {
         val state = rememberWindowState(placement = WindowPlacement.Maximized)
+        val darkMode by root.darkMode.subscribeAsState()
         Window(onCloseRequest = ::close, title = "Server Host", state = state) {
-            MaterialTheme(typography = MaterialTheme.typography.copy(h1 = MaterialTheme.typography.h1.copy(fontSize = 2.em))) {
+            MaterialTheme(
+                typography = MaterialTheme.typography.copy(h1 = MaterialTheme.typography.h1.copy(fontSize = 2.em)),
+                colors = if (darkMode) darkColors() else lightColors()
+            ) {
                 App(root)
             }
         }

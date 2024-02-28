@@ -2,6 +2,7 @@ package minerofmillions.serverhost.app.components
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
+import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import minerofmillions.serverhost.HostConfig
 import minerofmillions.serverhost.ServerConfig
@@ -9,6 +10,8 @@ import minerofmillions.serverhost.ServerConfig
 class HostEditComponent(
     private val onCancel: () -> Unit,
     private val onSave: (HostConfig) -> Unit,
+    private val onSetDarkMode: (Boolean) -> Unit,
+    val darkMode: Value<Boolean>,
     context: ComponentContext,
 ) :
     ComponentContext by context {
@@ -44,4 +47,6 @@ class HostEditComponent(
             servers.map { if (it == server) it.copy(baseDirectory = baseDirectory) else it }
         }
     }
+
+    fun setDarkMode(value: Boolean) = onSetDarkMode(value)
 }

@@ -21,6 +21,7 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
+    implementation(compose.materialIconsExtended)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.5.0")
     implementation("com.arkivanov.decompose:decompose:2.2.2")
     implementation("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
