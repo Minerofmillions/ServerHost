@@ -64,7 +64,7 @@ fun InputStream.readUncompressedPacket(): Packet {
     val data = try {
         readNBytes(remainingSize)
     } catch (e: SocketException) {
-        throw SocketException("Failed to read $remainingSize bytes for packet 0x${packetId.toString(16)}", e)
+        throw Exception("Failed to read $remainingSize bytes for packet 0x${packetId.toString(16)}", e)
     }
     return Packet(packetId, data)
 }
