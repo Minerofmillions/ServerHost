@@ -87,8 +87,8 @@ class Server(
     private fun startListener() {
         listener = coroutineScope.launch {
             val socket = ServerSocket(portToUse)
-            socket.soTimeout = 500
-            while (!socket.isClosed && this.isActive) {
+            socket.soTimeout = 250
+            while (!socket.isClosed && isActive) {
                 val connection = try {
                     socket.accept()
                 } catch (_: SocketTimeoutException) {
@@ -149,11 +149,11 @@ class Server(
         startServer()
     }
 
-    private fun startServer() {
+    private suspend fun startServer() = coroutineScope {
         serverState.value = ServerState.STARTED
         serverLog.value = emptyList()
         process.value = processBuilder.start()
-        logTransfer = coroutineScope.launch {
+        logTransfer = launch {
             supervisorScope {
                 transfer(process.value.inputReader())
                 transfer(process.value.errorReader())
@@ -161,6 +161,7 @@ class Server(
             }
         }
         process.value.onExit().thenRun {
+            println("Server $serverName stopped.")
             serverState.value = ServerState.STOPPED
             logTransfer.cancel()
             startListener()
