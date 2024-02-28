@@ -8,6 +8,7 @@ import minerofmillions.serverhost.Server
 import minerofmillions.serverhost.app.runOnUiThread
 import minerofmillions.serverhost.coroutineScope
 import minerofmillions.utils.any
+import minerofmillions.utils.forEachParallel
 
 class ServerHostComponent(
     val servers: List<Server>,
@@ -19,9 +20,10 @@ class ServerHostComponent(
     private val coroutineContext = coroutineScope(Dispatchers.IO)
     val anyServerActive = servers.map(Server::logShowing).any()
 
-    fun closeServers() {
+    suspend fun closeServers() {
         servers.forEach { it.setServerActive(false) }
-        servers.forEach { it.awaitServerStopped() }
+        servers.forEachParallel { it.awaitServerStopped() }
+        servers.forEach { it.stopListener() }
     }
 
     fun configure() {

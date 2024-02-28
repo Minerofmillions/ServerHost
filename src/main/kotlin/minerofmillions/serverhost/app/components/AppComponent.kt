@@ -6,6 +6,7 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.essenty.parcelable.Parcelable
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import minerofmillions.serverhost.HostConfig
 
@@ -29,7 +30,7 @@ class AppComponent(componentContext: ComponentContext) : ComponentContext by com
 
     fun closeServers() {
         val slotValue = slot.value.child?.instance ?: return
-        if (slotValue is ServerHostComponent) slotValue.closeServers()
+        if (slotValue is ServerHostComponent) runBlocking { slotValue.closeServers() }
     }
 
     @Serializable

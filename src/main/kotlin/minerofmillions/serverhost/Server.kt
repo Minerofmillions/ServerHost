@@ -131,12 +131,13 @@ class Server(
         }
     }
 
-    private fun stopListener() {
+    suspend fun stopListener() {
         listener.cancel()
+        listener.join()
     }
 
-    private fun start() {
-        if (serverState.value != ServerState.STOPPED) return
+    private fun start() = runBlocking {
+        if (serverState.value != ServerState.STOPPED) return@runBlocking
         stopListener()
         startServer()
     }
