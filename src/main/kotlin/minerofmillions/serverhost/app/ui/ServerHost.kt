@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +29,13 @@ fun ServerHost(component: ServerHostComponent) {
             Text("Server Host")
         }, actions = {
             IconButton({ component.configure() }) {
+            val darkMode by component.darkMode.subscribeAsState()
+            if (darkMode) IconButton({ component.setDarkMode(false) }) {
+                Icon(Icons.Default.LightMode, "Change to Light Mode")
+            } else IconButton({ component.setDarkMode(true) }) {
+                Icon(Icons.Default.DarkMode, "Change to Dark Mode")
+            }
+
                 TooltipArea(tooltip = {
                     Surface(
                         modifier = Modifier.shadow(4.dp),
