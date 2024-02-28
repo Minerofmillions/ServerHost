@@ -59,7 +59,7 @@ class Server(
             val serverPropertiesFile = serverDirectory.resolve("server.properties")
             if (!serverPropertiesFile.exists()) {
                 println("Running server at \"$serverDirectory\" to generate properties.")
-                startIgnoreListener()
+                startServer()
                 stop()
                 awaitServerStopped()
             }
@@ -138,10 +138,10 @@ class Server(
     private fun start() {
         if (serverState.value != ServerState.STOPPED) return
         stopListener()
-        startIgnoreListener()
+        startServer()
     }
 
-    private fun startIgnoreListener() {
+    private fun startServer() {
         serverState.value = ServerState.STARTED
         serverLog.value = emptyList()
         process.value = processBuilder.start()
