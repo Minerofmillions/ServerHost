@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.getValue
 import com.arkivanov.decompose.value.operator.map
+import com.fasterxml.jackson.databind.DatabindException
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.*
@@ -41,7 +42,7 @@ class Server(
     private val coroutineScope = coroutineScope(Dispatchers.IO)
 
     val baseDirectory: String = serverDirectory.absolutePath
-    private val faviconFile = serverDirectory.resolve("host.favicon")
+    private val responseFile = serverDirectory.resolve("host.response")
 
     init {
         if (!serverDirectory.isDirectory) {
@@ -114,13 +115,18 @@ class Server(
                 toClient.writePacket(Packet.disconnectPacket(PlainTextObject("$serverName will start. Please wait.")))
                 start()
             } else {
+                val responseBase = try {
+                    responseFile.takeIf(File::isFile)?.let { mapper.readValue(it, StatusResponse::class.java) }
+                } catch (e: DatabindException) {
+                    null
+                }
                 toClient.writePacket(
                     Packet.statusResponsePacket(
                         StatusResponse(
-                            StatusVersion("1.19.2", 760),
+                            responseBase?.version ?: StatusVersion("1.19.2", 760),
                             StatusPlayers(0, 0),
                             PlainTextObject("$serverName is hosted. Please connect to start."),
-                            faviconFile.takeIf(File::exists)?.readText()?.trim()
+                            responseBase?.favicon
                         )
                     )
                 )
@@ -170,9 +176,9 @@ class Server(
     }
 
     fun gatherFavicon() = coroutineScope.launch {
-        val favicon = pingServer().await()?.favicon ?: return@launch
-        assert(favicon.startsWith("data:image/png;base64,"))
-        faviconFile.writeText(favicon)
+        val statusResponse = pingServer().await() ?: return@launch
+        assert(statusResponse.favicon?.startsWith("data:image/png;base64,") != null)
+        mapper.writeValue(responseFile, statusResponse)
     }
 
     private fun CoroutineScope.pingServer() = async {
