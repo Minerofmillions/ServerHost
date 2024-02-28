@@ -58,7 +58,7 @@ class Server(
             serverDirectory.resolve("eula.txt").takeUnless(File::exists)?.writeText("eula=true")
 
             val serverPropertiesFile = serverDirectory.resolve("server.properties")
-            if (!serverPropertiesFile.exists()) {
+            if (!serverPropertiesFile.exists()) runBlocking {
                 println("Running server at \"$serverDirectory\" to generate properties.")
                 startServer()
                 stop()
@@ -143,8 +143,8 @@ class Server(
         listener.join()
     }
 
-    private fun start() = runBlocking {
-        if (serverState.value != ServerState.STOPPED) return@runBlocking
+    private fun start() = coroutineScope.launch {
+        if (serverState.value != ServerState.STOPPED) return@launch
         stopListener()
         startServer()
     }
@@ -155,9 +155,9 @@ class Server(
         process.value = processBuilder.start()
         logTransfer = launch {
             supervisorScope {
-                transfer(process.value.inputReader())
-                transfer(process.value.errorReader())
-                autoOff()
+                launch { transfer(process.value.inputReader()) }
+                launch { transfer(process.value.errorReader()) }
+                launch { autoOff() }
             }
         }
         process.value.onExit().thenRun {
@@ -183,30 +183,32 @@ class Server(
         mapper.writeValue(responseFile, statusResponse)
     }
 
-    private fun CoroutineScope.pingServer() = async {
-        if (serverState.value != ServerState.STARTED) null
-        else try {
-            Socket("localhost", portToUse).use { socket ->
-                DataInputStream(socket.getInputStream()).use { fromServer ->
-                    DataOutputStream(socket.getOutputStream()).use { toServer ->
-                        toServer.writePacket(Packet.handshakePacket(765, "localhost", portToUse, false))
-                        toServer.writePacket(Packet.statusRequestPacket())
-                        val status = fromServer.readUncompressedPacket()
+    private suspend fun pingServer() = coroutineScope {
+        async {
+            if (serverState.value != ServerState.STARTED) null
+            else try {
+                Socket("localhost", portToUse).use { socket ->
+                    DataInputStream(socket.getInputStream()).use { fromServer ->
+                        DataOutputStream(socket.getOutputStream()).use { toServer ->
+                            toServer.writePacket(Packet.handshakePacket(765, "localhost", portToUse, false))
+                            toServer.writePacket(Packet.statusRequestPacket())
+                            val status = fromServer.readUncompressedPacket()
 
-                        val statusData = ByteArrayInputStream(status.data)
-                        val (responseStringLength) = statusData.readVarInt()
-                        val responseString = statusData.readNBytes(responseStringLength)
+                            val statusData = ByteArrayInputStream(status.data)
+                            val (responseStringLength) = statusData.readVarInt()
+                            val responseString = statusData.readNBytes(responseStringLength)
 
-                        mapper.readValue(responseString, StatusResponse::class.java)
+                            mapper.readValue(responseString, StatusResponse::class.java)
+                        }
                     }
                 }
+            } catch (e: ConnectException) {
+                null
             }
-        } catch (e: ConnectException) {
-            null
         }
     }
 
-    private fun CoroutineScope.transfer(stream: BufferedReader) = launch {
+    private suspend fun transfer(stream: BufferedReader) = coroutineScope {
         while (isActive) {
             val nextLine = stream.readLine() ?: break
             serverLog.value += nextLine
@@ -214,7 +216,7 @@ class Server(
         stream.close()
     }
 
-    private fun CoroutineScope.autoOff() = launch {
+    private suspend fun autoOff() = coroutineScope {
         val autoOff by autoOff
         val autoOffDuration by autoOffDuration
         var hadNoPlayers = false
