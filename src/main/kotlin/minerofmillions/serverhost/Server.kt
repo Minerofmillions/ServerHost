@@ -138,6 +138,7 @@ class Server(
     }
 
     suspend fun stopListener() {
+        if (!::listener.isInitialized) return
         listener.cancel()
         listener.join()
     }
