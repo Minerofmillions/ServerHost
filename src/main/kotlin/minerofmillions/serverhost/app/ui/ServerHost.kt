@@ -24,11 +24,11 @@ import minerofmillions.serverhost.app.components.ServerHostComponent
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ServerHost(component: ServerHostComponent) {
+    val anyServerActive by component.anyServerActive.subscribeAsState()
     Scaffold(topBar = {
         TopAppBar(title = {
             Text("Server Host")
         }, actions = {
-            IconButton({ component.configure() }) {
             val darkMode by component.darkMode.subscribeAsState()
             if (darkMode) IconButton({ component.setDarkMode(false) }) {
                 Icon(Icons.Default.LightMode, "Change to Light Mode")
@@ -36,20 +36,20 @@ fun ServerHost(component: ServerHostComponent) {
                 Icon(Icons.Default.DarkMode, "Change to Dark Mode")
             }
 
+            IconButton({ component.configure() }, enabled = !anyServerActive) {
                 TooltipArea(tooltip = {
                     Surface(
                         modifier = Modifier.shadow(4.dp),
                         color = MaterialTheme.colors.error,
                         shape = RoundedCornerShape(4.dp)
                     ) {
-                        Text("Warning: Changing settings will stop all currently running servers.")
+                        Text("Changing settings requires no currently running servers.")
                     }
                 }) { Icon(Icons.Default.Settings, "Settings") }
             }
         })
     }) { padding ->
         Column(Modifier.padding(padding)) {
-            val anyServerActive by component.anyServerActive.subscribeAsState()
             val coroutineScope = rememberCoroutineScope()
             component.servers.forEach {
                 ServerDashboard(it)
