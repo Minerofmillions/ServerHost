@@ -179,7 +179,6 @@ class Server(
 
     fun gatherFavicon() = coroutineScope.launch {
         val statusResponse = pingServer().await() ?: return@launch
-        assert(statusResponse.favicon?.startsWith("data:image/png;base64,") != null)
         mapper.writeValue(responseFile, statusResponse)
     }
 
