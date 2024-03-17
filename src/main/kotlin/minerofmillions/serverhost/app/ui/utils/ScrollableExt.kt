@@ -1,4 +1,4 @@
-package minerofmillions.serverhost.app.ui
+package minerofmillions.serverhost.app.ui.utils
 
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.gestures.FlingBehavior

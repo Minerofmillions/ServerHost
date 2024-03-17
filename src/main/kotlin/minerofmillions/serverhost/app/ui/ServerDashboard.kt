@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import minerofmillions.serverhost.Server
 import minerofmillions.serverhost.Server.ServerState.*
+import minerofmillions.serverhost.app.ui.utils.ScrollableColumn
 import minerofmillions.utils.truncate
 
 @Composable

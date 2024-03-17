@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import minerofmillions.serverhost.app.components.HostEditComponent
+import minerofmillions.serverhost.app.ui.utils.ScrollableColumn
 
 @Composable
 fun HostEdit(component: HostEditComponent) {
