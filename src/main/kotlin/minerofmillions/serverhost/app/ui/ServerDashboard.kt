@@ -20,6 +20,7 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import minerofmillions.serverhost.Server
 import minerofmillions.serverhost.Server.ServerState.*
 import minerofmillions.serverhost.app.ui.utils.ScrollableColumn
+import minerofmillions.serverhost.app.ui.utils.Selector
 import minerofmillions.utils.truncate
 
 @Composable
@@ -40,8 +41,8 @@ private fun ErrorDashboard(reason: String) = Column(Modifier.border(2.dp, Materi
 private fun ColumnScope.ValidDashboard(server: Server) {
     val serverState by server.serverState.subscribeAsState()
     val logShowing by server.logShowing.subscribeAsState()
-    val autoOff by server.autoOff.subscribeAsState()
-    val autoOffDelay by server.autoOffDuration.subscribeAsState()
+    val timeoutEnabled by server.timeoutEnabled.subscribeAsState()
+    val timeoutDuration by server.timeoutDuration.subscribeAsState()
 
     val modifier = Modifier.border(2.dp, MaterialTheme.colors.secondary).run {
         if (logShowing) weight(1f) else height(IntrinsicSize.Min)
@@ -51,15 +52,29 @@ private fun ColumnScope.ValidDashboard(server: Server) {
         val logState = rememberLazyListState()
 
         Column(Modifier.padding(4.dp)) {
+            // Server Name
             Text(server.serverName, style = MaterialTheme.typography.h1)
+            // Server Location
             Text(server.baseDirectory.truncate(50))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Auto Off:", Modifier.weight(1f))
-                Checkbox(autoOff, server::setAutoOff)
-                TextField(autoOffDelay.toString(),
-                    server::setAutoOffDelay,
-                    label = { Text("Auto Off Delay") },
-                    trailingIcon = { Text("ms") })
+            // Auto-off timeout
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Auto Off:", Modifier.weight(1f))
+                    Checkbox(timeoutEnabled, server::setAutoOff)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextField(timeoutDuration.toString(),
+                        server::setAutoOffDelay,
+                        modifier = Modifier.weight(1f),
+                        label = { Text("Auto Off Delay") })
+                    val selectedTimeoutUnit by server.timeoutUnit.subscribeAsState()
+                    Selector(
+                        Server.TimeUnit.entries,
+                        selectedTimeoutUnit,
+                        server::selectTimeoutUnit,
+                        label = Server.TimeUnit::abbreviation
+                    )
+                }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Is Active:", Modifier.weight(1f))

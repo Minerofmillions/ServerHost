@@ -14,7 +14,12 @@ import java.net.ConnectException
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketTimeoutException
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 class Server(
     serverDirectory: File,
@@ -33,8 +38,9 @@ class Server(
     private lateinit var listener: Job
     private lateinit var logTransfer: Job
 
-    val autoOff = MutableValue(true)
-    val autoOffDuration = MutableValue(5.minutes.inWholeMilliseconds)
+    val timeoutEnabled = MutableValue(true)
+    val timeoutDuration = MutableValue(5L)
+    val timeoutUnit = MutableValue(TimeUnit.MINUTES)
 
     val logShowing = serverState.map { it == ServerState.STARTED || it == ServerState.STOPPING }
     val isErrored = serverState.map { it is ServerState.ERRORED }
@@ -195,11 +201,7 @@ class Server(
                             toServer.writePacket(Packet.statusRequestPacket())
                             val status = fromServer.readUncompressedPacket()
 
-                            val statusData = ByteArrayInputStream(status.data)
-                            val (responseStringLength) = statusData.readVarInt()
-                            val responseString = statusData.readNBytes(responseStringLength)
-
-                            mapper.readValue(responseString, StatusResponse::class.java)
+                            StatusResponse.fromPacket(status)
                         }
                     }
                 }
@@ -218,13 +220,19 @@ class Server(
     }
 
     private suspend fun autoOff() = coroutineScope {
-        val autoOff by autoOff
-        val autoOffDuration by autoOffDuration
+        val timeoutEnabled by timeoutEnabled
+        val timeoutDuration by timeoutDuration
+        val timeoutUnit by timeoutUnit
         var hadNoPlayers = false
         while (isActive) {
-            if (autoOff) {
-                delay(autoOffDuration)
-                if (pingServer().await()?.players?.online == 0) {
+            if (timeoutEnabled) {
+                delay(timeoutUnit(timeoutDuration) / 2)
+                val numPlayersOnline = pingServer().await()?.players?.online
+                if (numPlayersOnline == null) {
+                    println("Skipping timeout check (null response): $serverName")
+                    continue
+                }
+                else if (numPlayersOnline == 0) {
                     if (hadNoPlayers) stop()
                     else hadNoPlayers = true
                 } else hadNoPlayers = false
@@ -236,12 +244,12 @@ class Server(
     }
 
     fun setAutoOff(active: Boolean) {
-        autoOff.value = active
+        timeoutEnabled.value = active
     }
 
     fun setAutoOffDelay(delay: String) {
         val newDelay = delay.toLongOrNull() ?: return
-        autoOffDuration.value = newDelay
+        timeoutDuration.value = newDelay
     }
 
     fun setCommand(str: String) {
@@ -260,6 +268,10 @@ class Server(
         it.flush()
     }
 
+    fun selectTimeoutUnit(unit: TimeUnit) {
+        timeoutUnit.value = unit
+    }
+
     companion object {
         private val mapper = ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         private const val AUTO_OFF_PING_DELAY: Long = 1000
@@ -273,5 +285,15 @@ class Server(
         data object STOPPING : ServerState
         data object STOPPED : ServerState
         data class ERRORED(val reason: String) : ServerState
+    }
+
+    enum class TimeUnit(val abbreviation: String, val conversion: (Long) -> Duration) {
+        MILLIS("ms", { it.milliseconds }),
+        SECONDS("secs", { it.seconds }),
+        MINUTES("mins", { it.minutes }),
+        HOURS("hrs", { it.hours }),
+        DAYS("days", { it.days });
+
+        operator fun invoke(duration: Long) = conversion(duration)
     }
 }
