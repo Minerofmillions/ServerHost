@@ -49,4 +49,9 @@ class HostEditComponent(
     }
 
     fun setDarkMode(value: Boolean) = onSetDarkMode(value)
+
+    fun addServer() {
+        val nextServerNumber = serversValue.value.size + 1
+        serversValue.value += ServerConfig("", "", "Server $nextServerNumber")
+    }
 }

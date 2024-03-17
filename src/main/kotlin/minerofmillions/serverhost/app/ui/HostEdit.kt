@@ -32,6 +32,11 @@ fun HostEdit(component: HostEditComponent) {
                 items(servers) { server ->
                     ServerEdit(server, component)
                 }
+                item {
+                    Button(component::addServer) {
+                        Text("Add Server")
+                    }
+                }
             }
             Row {
                 Button(
