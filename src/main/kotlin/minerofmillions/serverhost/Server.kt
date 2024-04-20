@@ -114,8 +114,7 @@ class Server(
         }
 
         try {
-            val handshake = fromClient.readUncompressedPacket()
-            val handshakeResponse = HandshakeResponse.parseHandshakeResponse(handshake)
+            val handshakeResponse = HandshakeResponse.parseHandshakeResponse(fromClient.readUncompressedPacket())
 
             val nextPacket = fromClient.readUncompressedPacket()
 

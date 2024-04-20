@@ -19,11 +19,7 @@ import javax.swing.SwingUtilities
 fun main() {
     val lifecycle = LifecycleRegistry()
 
-    val root = runOnUiThread {
-        val componentContext = DefaultComponentContext(lifecycle)
-
-        AppComponent(componentContext)
-    }
+    val root = runOnUiThread { AppComponent(DefaultComponentContext(lifecycle)) }
 
     fun ApplicationScope.close() {
         runBlocking {
@@ -63,5 +59,5 @@ fun <T> runOnUiThread(block: () -> T): T {
     }
     error?.let { throw it }
 
-    @Suppress("UNCHECKED_CAST") return result as T
+    return result!!
 }
