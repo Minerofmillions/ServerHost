@@ -42,7 +42,7 @@ fun writePropertiesFile(values: Map<String, String>, file: File) =
 
 fun readPropertiesFile(file: File): Map<String, String> =
     file.readLines().filterNot { it.isBlank() || it.startsWith('#') }.associate {
-        val (k, v) = it.split('=')
+        val (k, v) = it.split('=', limit = 2)
         k to v
     }
 
