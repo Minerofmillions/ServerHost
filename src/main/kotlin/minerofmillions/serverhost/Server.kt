@@ -32,9 +32,10 @@ class Server(
     val serverState = MutableValue<ServerState>(ServerState.STOPPED)
     val serverLog = MutableValue(emptyList<String>())
     val command = MutableValue("")
+    val isUnfolded = MutableValue(false)
 
     private val process = MutableValue(ProcessBuilder("java", "-version").start())
-    private val processWriter = process.map { it.outputWriter() }
+    private val processWriter = process.map(Process::outputWriter)
     private lateinit var listener: Job
     private lateinit var logTransfer: Job
 
@@ -77,6 +78,10 @@ class Server(
 
             startListener()
         }
+    }
+
+    fun toggleFolded() {
+        isUnfolded.value = !isUnfolded.value
     }
 
     fun setServerActive(active: Boolean) {
