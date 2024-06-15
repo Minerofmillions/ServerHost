@@ -1,6 +1,7 @@
 package minerofmillions.utils
 
-fun String.truncate(chars: Int, truncationIndicator: String = "...") = if (length <= chars) this else take(chars) + truncationIndicator
+fun String.truncate(chars: Int, truncationIndicator: String = "...") =
+    if (length <= chars) this else take(chars) + truncationIndicator
 
 fun String.splitCommand() = split(' ').let {
     var currentWord = ""

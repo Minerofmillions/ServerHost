@@ -42,6 +42,7 @@ class HostEditComponent(
             servers.map { if (it == server) it.copy(startCommand = startCommand) else it }
         }
     }
+
     fun setServerBase(server: ServerConfig, baseDirectory: String) {
         serversValue.update { servers ->
             servers.map { if (it == server) it.copy(baseDirectory = baseDirectory) else it }

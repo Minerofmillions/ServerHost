@@ -236,8 +236,7 @@ class Server(
                 if (numPlayersOnline == null) {
                     println("Skipping timeout check (null response): $serverName")
                     continue
-                }
-                else if (numPlayersOnline == 0) {
+                } else if (numPlayersOnline == 0) {
                     if (hadAnyPlayers && hadNoPlayers) stop()
                     else hadNoPlayers = true
                 } else {

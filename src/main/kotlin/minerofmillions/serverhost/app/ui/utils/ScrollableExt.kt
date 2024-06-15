@@ -27,9 +27,19 @@ fun ScrollableColumn(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     userScrollEnabled: Boolean = true,
-    content: LazyListScope.() -> Unit
+    content: LazyListScope.() -> Unit,
 ) = Row(modifier) {
     val scrollbarAdapter = rememberScrollbarAdapter(state)
-    LazyColumn(Modifier.weight(1f), state, contentPadding, reverseLayout, verticalArrangement, horizontalAlignment, flingBehavior, userScrollEnabled, content)
+    LazyColumn(
+        Modifier.weight(1f),
+        state,
+        contentPadding,
+        reverseLayout,
+        verticalArrangement,
+        horizontalAlignment,
+        flingBehavior,
+        userScrollEnabled,
+        content
+    )
     VerticalScrollbar(scrollbarAdapter, reverseLayout = reverseLayout)
 }

@@ -22,7 +22,7 @@ class AppComponent(componentContext: ComponentContext) : ComponentContext by com
             Config.EDIT -> HostEditComponent({
                 navigation.activate(Config.HOST)
             }, {
-               HostConfig.writeConfig(it)
+                HostConfig.writeConfig(it)
                 navigation.activate(Config.HOST)
             }, { darkMode.value = it }, darkMode, childContext)
         }
