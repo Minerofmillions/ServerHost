@@ -6,7 +6,7 @@ plugins {
     kotlin("plugin.serialization") version "1.8.20"
 }
 
-group = "minerofmillions"
+group = "io.github.minerofmillions"
 version = "1.0.0"
 
 repositories {
@@ -30,7 +30,7 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "minerofmillions.serverhost.app.MainKt"
+        mainClass = "io.github.minerofmillions.serverhost.app.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
@@ -41,8 +41,8 @@ compose.desktop {
     }
 }
 
-tasks.register<Copy>("installAndCopy") {
-    val createDistributable by tasks.getting
-    from(createDistributable.outputs.files)
+val installAndCopy by tasks.registering(Copy::class) {
+    val createRuntimeDistributable by tasks.getting
+    from(createRuntimeDistributable.outputs.files)
     into(providers.environmentVariable("HOST_INSTALL_DIR"))
 }
