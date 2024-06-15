@@ -227,6 +227,7 @@ class Server(
         val timeoutEnabled by timeoutEnabled
         val timeoutDuration by timeoutDuration
         val timeoutUnit by timeoutUnit
+        var hadAnyPlayers = false
         var hadNoPlayers = false
         while (isActive) {
             if (timeoutEnabled) {
@@ -237,9 +238,12 @@ class Server(
                     continue
                 }
                 else if (numPlayersOnline == 0) {
-                    if (hadNoPlayers) stop()
+                    if (hadAnyPlayers && hadNoPlayers) stop()
                     else hadNoPlayers = true
-                } else hadNoPlayers = false
+                } else {
+                    hadAnyPlayers = true
+                    hadNoPlayers = false
+                }
             } else {
                 hadNoPlayers = false
                 delay(AUTO_OFF_PING_DELAY)
