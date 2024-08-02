@@ -30,13 +30,16 @@ fun ColumnScope.ServerDashboard(server: Server) {
     val serverState by server.serverState.subscribeAsState()
     val isErrored by server.isErrored.subscribeAsState()
 
-    if (isErrored) ErrorDashboard((serverState as ERRORED).reason)
+    if (isErrored) ErrorDashboard(server.serverName, (serverState as ERRORED).reason)
     else ValidDashboard(server)
 }
 
 @Composable
-private fun ErrorDashboard(reason: String) = Column(Modifier.border(2.dp, MaterialTheme.colors.error)) {
-    Text("Error: $reason")
+private fun ErrorDashboard(name: String, reason: String) = Box(Modifier.border(2.dp, MaterialTheme.colors.error)) {
+    Column(Modifier.padding(2.dp)) {
+        Text(name, style = MaterialTheme.typography.h1)
+        Text("Error: $reason")
+    }
 }
 
 @Composable
