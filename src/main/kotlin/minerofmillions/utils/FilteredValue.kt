@@ -17,7 +17,7 @@ class FilteredValue<T>(upstream: List<T>, predicate: (T) -> Value<Boolean>) :
     private fun mapCached(values: Set<T>): List<T> = Lock.synchronized {
         if (values != lastValueSet) {
             lastValueSet = values
-            lastValue
+            lastValue = lastValueSet.toList()
         }
 
         lastValue
