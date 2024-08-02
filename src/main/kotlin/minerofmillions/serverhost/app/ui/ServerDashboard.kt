@@ -26,7 +26,7 @@ import minerofmillions.serverhost.app.ui.utils.Selector
 import minerofmillions.utils.truncate
 
 @Composable
-fun ColumnScope.ServerDashboard(server: Server) {
+fun ServerDashboard(server: Server) {
     val serverState by server.serverState.subscribeAsState()
     val isErrored by server.isErrored.subscribeAsState()
 
@@ -43,16 +43,14 @@ private fun ErrorDashboard(name: String, reason: String) = Box(Modifier.border(2
 }
 
 @Composable
-private fun ColumnScope.ValidDashboard(server: Server) {
+private fun ValidDashboard(server: Server) {
     val serverState by server.serverState.subscribeAsState()
     val logShowing by server.logShowing.subscribeAsState()
     val isUnfolded by server.isUnfolded.subscribeAsState()
     val timeoutEnabled by server.timeoutEnabled.subscribeAsState()
     val timeoutDuration by server.timeoutDuration.subscribeAsState()
 
-    val modifier = Modifier.border(2.dp, MaterialTheme.colors.secondary).run {
-        if (logShowing) weight(1f) else height(IntrinsicSize.Min)
-    }
+    val modifier = Modifier.border(2.dp, MaterialTheme.colors.secondary).height(IntrinsicSize.Min)
 
     Box(modifier) {
         val logState = rememberLazyListState()
@@ -101,7 +99,7 @@ private fun ColumnScope.ValidDashboard(server: Server) {
 
                     Text("Log:")
                     ScrollableColumn(
-                        Modifier.weight(1f).fillMaxWidth().border(1.dp, MaterialTheme.colors.secondary),
+                        Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colors.secondary).height(100.dp),
                         logState,
                         PaddingValues(3.dp),
                         reverseLayout = true

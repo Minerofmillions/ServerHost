@@ -2,13 +2,13 @@ package minerofmillions.utils
 
 import com.arkivanov.decompose.value.Value
 
-fun List<Value<Boolean>>.any(): Value<Boolean> = ListReducedValue(this) { it.any { it } }
+fun List<Value<Boolean>>.any(): Value<Boolean> = ListReducedValue(this) { it.any(::identity) }
 
 class ListReducedValue<T : Any, out R : Any>(private val upstream: List<Value<T>>, private val mapper: (List<T>) -> R) :
     Value<R>() {
     private var lastUpstreamValues: List<T> = upstream.map(Value<T>::value)
     private var lastMappedValue: R = mapper(lastUpstreamValues)
-    private var observers = HashMap<(R) -> Unit, (T) -> Unit>()
+    private val observers = mutableMapOf<(R) -> Unit, (T) -> Unit>()
 
     override val value: R get() = mapCached(upstream.map(Value<T>::value))
     private fun mapCached(values: List<T>): R = Lock.synchronized {

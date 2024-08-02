@@ -4,6 +4,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -51,8 +54,15 @@ fun ServerHost(component: ServerHostComponent) {
     }) { padding ->
         Column(Modifier.padding(padding)) {
             val coroutineScope = rememberCoroutineScope()
-            component.servers.forEach {
-                ServerDashboard(it)
+            val validServers by component.validServers.subscribeAsState()
+            val erroredServers by component.erroredServers.subscribeAsState()
+            LazyVerticalStaggeredGrid(columns = StaggeredGridCells.Adaptive(minSize = 500.dp)) {
+                items(validServers) {
+                    ServerDashboard(it)
+                }
+                items(erroredServers) {
+                    ServerDashboard(it)
+                }
             }
             if (anyServerActive) Button({ coroutineScope.launch(Dispatchers.IO) { component.closeServers() } }) {
                 Text("Shut down all servers")
