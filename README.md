@@ -8,6 +8,7 @@
 2. Set the environment variable `HOST_INSTALL_DIR`
 3. In the root directory, run the command `./gradlew installAndCopy`
 
+<!---
 ## Remote API
 
 The host is equipped with a remote API on port 8080.
@@ -104,3 +105,4 @@ Packet ID: 0x02
 0b11: Errored
 
 [1]: https://wiki.vg/Protocol "Minecraft's Protocol"
+--->
