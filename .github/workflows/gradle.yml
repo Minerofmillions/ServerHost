@@ -61,7 +61,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ jobs.prepareRelease.outputs.upload_url }}
+          upload_url: ${{ needs.prepareRelease.outputs.upload_url }}
           asset_path: ./build/distributions/server-host-${{ github.ref }}.zip
           asset_name: ${{ matrix.os }}.zip
           asset_content_type: application/zip
@@ -76,4 +76,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          id: ${{ jobs.prepareRelease.outputs.id }}
+          id: ${{ needs.prepareRelease.outputs.id }}
