@@ -14,6 +14,7 @@ on:
 
 jobs:
   prepareRelease:
+    runs-on: ubuntu-latest
     outputs:
       id: ${{ steps.createRelease.outputs.id }}
       upload_url: ${{ steps.createRelease.outputs.upload_url }}
