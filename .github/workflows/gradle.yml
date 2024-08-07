@@ -59,14 +59,10 @@ jobs:
           USERNAME: ${{ github.repository_owner }}
           PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: AButler/upload-release-assets@v3.0
         with:
-          upload_url: ${{ needs.prepareRelease.outputs.upload_url }}
-          asset_path: ./build/distributions/server-host-${{ github.ref_name }}.zip
-          asset_name: ${{ matrix.os }}.zip
-          asset_content_type: application/zip
+          release-id: ${{ needs.prepareRelease.outputs.id }}
+          files: ./build/distributions/server-host-${{ github.ref_name }}.zip
 
   finalizeRelease:
     name: Create Release
