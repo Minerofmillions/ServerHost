@@ -72,6 +72,8 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     needs: [ prepareRelease, build ]
+    permissions:
+      contents: write
     steps:
       - name: Publish release
         uses: StuYarrow/publish-release@v1.1.2
