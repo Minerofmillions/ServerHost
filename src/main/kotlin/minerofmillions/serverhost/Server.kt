@@ -107,7 +107,6 @@ class Server(
                 }
                 launch { handleConnection(connection) }
             }
-            println("Closing listener: $serverName")
             socket.close()
         }
     }

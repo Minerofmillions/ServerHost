@@ -35,7 +35,7 @@ dependencies {
     implementation("com.arkivanov.decompose:decompose:3.1.0")
     implementation("com.arkivanov.decompose:extensions-compose:3.1.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
-    implementation("io.github.minerofmillions:decompose-utilities:1.0.1")
+    implementation("io.github.minerofmillions:decompose-utilities:1.0.2")
 }
 
 compose.desktop {

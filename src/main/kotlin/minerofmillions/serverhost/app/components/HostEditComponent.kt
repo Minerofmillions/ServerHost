@@ -46,6 +46,10 @@ class HostEditComponent(
         serversValue[serverIndex] = serversValue[serverIndex].copy(baseDirectory = baseDirectory)
     }
 
+    fun removeServer(server: ServerConfig) {
+        serversValue.remove(server)
+    }
+
     fun setDarkMode(value: Boolean) = onSetDarkMode(value)
 
     fun addServer() {

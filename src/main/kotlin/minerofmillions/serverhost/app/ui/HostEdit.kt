@@ -30,7 +30,7 @@ fun HostEdit(component: HostEditComponent) {
                 singleLine = true,
                 label = { Text("Start Port") })
             LazyVerticalStaggeredGrid(StaggeredGridCells.Adaptive(minSize = 500.dp), Modifier.weight(1f)) {
-                items(servers) { server ->
+                items(servers, key = { it }) { server ->
                     ServerEdit(server, component)
                 }
             }
@@ -73,6 +73,9 @@ fun ServerEdit(server: ServerConfig, component: HostEditComponent) =
                     { component.setServerStart(server, it) },
                     Modifier.fillMaxWidth(),
                     label = { Text("Start Command") })
+                Button({ component.removeServer(server) }, Modifier.fillMaxWidth()) {
+                    Text("Remove Server")
+                }
             }
         }
     }
