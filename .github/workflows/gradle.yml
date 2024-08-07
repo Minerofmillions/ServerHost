@@ -37,6 +37,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
+      packages: read
 
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +55,9 @@ jobs:
       - name: Build
         id: createZip
         run: ./gradlew createReleaseZip
+        env:
+          USERNAME: ${{ github.repository_owner }}
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-release-asset@v1
         env:
