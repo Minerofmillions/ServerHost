@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization") version "1.8.20"
+    id("co.uzzu.dotenv.gradle") version "4.0.0"
 }
 
 group = "io.github.minerofmillions"
@@ -13,6 +14,14 @@ repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
+    maven {
+        url = uri("https://maven.pkg.github.com/Minerofmillions/decompose-utilities")
+        name = "GithubPackages"
+        credentials {
+            username = env.USERNAME.orNull() ?: System.getenv("USERNAME")
+            password = env.PACKAGES_TOKEN.orNull() ?: System.getenv("PACKAGES_TOKEN")
+        }
+    }
 }
 
 dependencies {
@@ -23,9 +32,10 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation(compose.materialIconsExtended)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.5.0")
-    implementation("com.arkivanov.decompose:decompose:2.2.2")
-    implementation("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
+    implementation("com.arkivanov.decompose:decompose:3.1.0")
+    implementation("com.arkivanov.decompose:extensions-compose:3.1.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
+    implementation("io.github.minerofmillions:decompose-utilities:1.0.1")
 }
 
 compose.desktop {

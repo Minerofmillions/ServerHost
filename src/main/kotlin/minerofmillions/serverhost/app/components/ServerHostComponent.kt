@@ -3,15 +3,14 @@ package minerofmillions.serverhost.app.components
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.operator.map
+import io.github.minerofmillions.decompose.collect
+import io.github.minerofmillions.decompose.filter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import minerofmillions.serverhost.HostConfig
 import minerofmillions.serverhost.*
 import minerofmillions.serverhost.app.runOnUiThread
-import minerofmillions.utils.any
-import minerofmillions.utils.filter
 import minerofmillions.utils.forEachParallel
 import java.net.ServerSocket
 import java.net.Socket
@@ -28,7 +27,7 @@ class ServerHostComponent(
         config.servers.mapIndexed { index, it -> Server.fromConfig(it, config.startPort + index, componentContext) }
 
     private val coroutineContext = coroutineScope(Dispatchers.IO)
-    val anyServerActive = servers.map(Server::logShowing).any()
+    val anyServerActive = servers.map(Server::logShowing).collect().map { list -> list.any { it } }
 
     private val _erroredServers = servers.filter { it.isErrored }
     val erroredServers: Value<List<Server>> = _erroredServers

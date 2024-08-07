@@ -7,7 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.window.*
 import com.arkivanov.decompose.DefaultComponentContext
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

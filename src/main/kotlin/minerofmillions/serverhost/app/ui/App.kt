@@ -2,7 +2,7 @@ package minerofmillions.serverhost.app.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import minerofmillions.serverhost.app.components.AppComponent
 import minerofmillions.serverhost.app.components.HostEditComponent
 import minerofmillions.serverhost.app.components.ServerHostComponent

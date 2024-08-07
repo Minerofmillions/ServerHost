@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.runtime.Composable
@@ -37,6 +38,36 @@ fun ScrollableColumn(
         reverseLayout,
         verticalArrangement,
         horizontalAlignment,
+        flingBehavior,
+        userScrollEnabled,
+        content
+    )
+    VerticalScrollbar(scrollbarAdapter, reverseLayout = reverseLayout)
+}
+
+@Composable
+fun ScrollableLazyVerticalGrid(
+    columns: GridCells,
+    modifier: Modifier = Modifier,
+    state: LazyGridState = rememberLazyGridState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical =
+        if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
+    userScrollEnabled: Boolean = true,
+    content: LazyGridScope.() -> Unit,
+) = Row(modifier) {
+    val scrollbarAdapter = rememberScrollbarAdapter(state)
+    LazyVerticalGrid(
+        columns,
+        Modifier.weight(1f),
+        state,
+        contentPadding,
+        reverseLayout,
+        verticalArrangement,
+        horizontalArrangement,
         flingBehavior,
         userScrollEnabled,
         content

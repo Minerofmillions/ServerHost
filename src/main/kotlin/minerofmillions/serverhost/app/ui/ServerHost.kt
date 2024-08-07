@@ -19,7 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import minerofmillions.serverhost.app.components.ServerHostComponent

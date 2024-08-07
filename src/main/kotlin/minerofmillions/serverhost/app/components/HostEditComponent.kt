@@ -3,7 +3,7 @@ package minerofmillions.serverhost.app.components
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.decompose.value.update
+import io.github.minerofmillions.decompose.mutableValueListOf
 import minerofmillions.serverhost.HostConfig
 import minerofmillions.serverhost.ServerConfig
 
@@ -16,12 +16,12 @@ class HostEditComponent(
 ) :
     ComponentContext by context {
     val startPortValue: MutableValue<Int>
-    val serversValue: MutableValue<List<ServerConfig>>
+    val serversValue = mutableValueListOf<ServerConfig>()
 
     init {
         val config = HostConfig.readConfig()
         startPortValue = MutableValue(config.startPort)
-        serversValue = MutableValue(config.servers)
+        serversValue.addAll(config.servers)
     }
 
     fun cancel() = onCancel()
@@ -32,27 +32,24 @@ class HostEditComponent(
     }
 
     fun setServerName(server: ServerConfig, serverName: String) {
-        serversValue.update { servers ->
-            servers.map { if (it == server) it.copy(serverName = serverName) else it }
-        }
+        val serverIndex = serversValue.indexOf(server)
+        serversValue[serverIndex] = serversValue[serverIndex].copy(serverName = serverName)
     }
 
     fun setServerStart(server: ServerConfig, startCommand: String) {
-        serversValue.update { servers ->
-            servers.map { if (it == server) it.copy(startCommand = startCommand) else it }
-        }
+        val serverIndex = serversValue.indexOf(server)
+        serversValue[serverIndex] = serversValue[serverIndex].copy(startCommand = startCommand)
     }
 
     fun setServerBase(server: ServerConfig, baseDirectory: String) {
-        serversValue.update { servers ->
-            servers.map { if (it == server) it.copy(baseDirectory = baseDirectory) else it }
-        }
+        val serverIndex = serversValue.indexOf(server)
+        serversValue[serverIndex] = serversValue[serverIndex].copy(baseDirectory = baseDirectory)
     }
 
     fun setDarkMode(value: Boolean) = onSetDarkMode(value)
 
     fun addServer() {
-        val nextServerNumber = serversValue.value.size + 1
-        serversValue.value += ServerConfig("", "", "Server $nextServerNumber")
+        val nextServerNumber = serversValue.size + 1
+        serversValue += ServerConfig("", "", "Server $nextServerNumber")
     }
 }

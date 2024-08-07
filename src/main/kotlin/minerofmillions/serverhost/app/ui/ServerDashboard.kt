@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import minerofmillions.serverhost.Server
 import minerofmillions.serverhost.Server.ServerState.*
 import minerofmillions.serverhost.app.ui.utils.ScrollableColumn

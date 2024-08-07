@@ -5,7 +5,6 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.value.MutableValue
-import com.arkivanov.essenty.parcelable.Parcelable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -17,7 +16,7 @@ class AppComponent(componentContext: ComponentContext) : ComponentContext by com
     private val coroutineScope = coroutineScope(Dispatchers.IO)
 
     val darkMode = MutableValue(true)
-    val slot = childSlot(navigation, initialConfiguration = { Config.HOST }) { config, childContext ->
+    val slot = childSlot(navigation, null, initialConfiguration = { Config.HOST }) { config, childContext ->
         when (config) {
             is Config.HOST -> ServerHostComponent(HostConfig.readConfig(), {
                 navigation.activate(Config.EDIT)
@@ -38,7 +37,7 @@ class AppComponent(componentContext: ComponentContext) : ComponentContext by com
     }
 
     @Serializable
-    sealed interface Config : Parcelable {
+    sealed interface Config {
         data object HOST : Config {
             private fun readResolve(): Any = HOST
         }
