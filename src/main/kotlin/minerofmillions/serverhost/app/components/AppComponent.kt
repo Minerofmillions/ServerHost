@@ -6,16 +6,20 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.essenty.parcelable.Parcelable
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import minerofmillions.serverhost.HostConfig
+import minerofmillions.serverhost.coroutineScope
 
 class AppComponent(componentContext: ComponentContext) : ComponentContext by componentContext {
-    val darkMode = MutableValue(true)
     private val navigation = SlotNavigation<Config>()
+    private val coroutineScope = coroutineScope(Dispatchers.IO)
+
+    val darkMode = MutableValue(true)
     val slot = childSlot(navigation, initialConfiguration = { Config.HOST }) { config, childContext ->
         when (config) {
-            is Config.HOST -> ServerHostComponent(HostConfig.getServers(childContext), {
+            is Config.HOST -> ServerHostComponent(HostConfig.readConfig(), {
                 navigation.activate(Config.EDIT)
             }, { darkMode.value = it }, darkMode, childContext)
 
@@ -30,7 +34,7 @@ class AppComponent(componentContext: ComponentContext) : ComponentContext by com
 
     fun closeServers() {
         val slotValue = slot.value.child?.instance ?: return
-        if (slotValue is ServerHostComponent) runBlocking { slotValue.closeServers() }
+        if (slotValue is ServerHostComponent) coroutineScope.launch { slotValue.closeServers() }
     }
 
     @Serializable

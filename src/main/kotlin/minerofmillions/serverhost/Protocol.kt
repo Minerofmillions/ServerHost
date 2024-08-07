@@ -20,18 +20,45 @@ fun InputStream.readVarInt(): Pair<Int, Int> {
     return i to j
 }
 
+@Throws(IOException::class)
+fun InputStream.readVarLong(): Pair<Long, Int> {
+    var i = 0L
+    var j = 0
+    while (true) {
+        val k = read().takeIf { it > -1 } ?: throw IOException("Stream ended early reading VarLong. ($j bytes)")
+        i += (k and 0x7f) shl (j++ * 7)
+        if (j > 10) throw RuntimeException("VarLong too big")
+        if ((k and 0x80) == 0) break
+    }
+    return i to j
+}
+
 fun encodeVarInt(param: Int): ByteArray {
     var paramInt = param
     val bytes = mutableListOf<Byte>()
     while (true) {
         if ((paramInt and 0x7f.inv()) == 0) {
             bytes.add(paramInt.toByte())
-            assert(bytes.size <= 5)
             return bytes.toByteArray()
         }
 
         bytes.add(((paramInt and 0x7f) + 0x80).toByte())
         paramInt = paramInt ushr 7
+    }
+}
+
+fun encodeVarLong(param: Long): ByteArray {
+    var paramLong = param
+    val bytes = mutableListOf<Byte>()
+    while (true) {
+        if ((paramLong and 0x7f.inv()) == 0L) {
+            bytes.add(paramLong.toByte())
+            return bytes.toByteArray()
+        }
+
+        bytes.add(((paramLong and 0x7f) + 0x80).toByte())
+
+        paramLong = paramLong ushr 7
     }
 }
 
