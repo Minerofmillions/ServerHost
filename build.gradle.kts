@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.minerofmillions"
-version = "1.0.0"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
@@ -59,4 +59,11 @@ val installAndCopy by tasks.registering(Copy::class) {
     val createReleaseDistributable by tasks.getting
     from(createReleaseDistributable.outputs.files)
     into(providers.environmentVariable("HOST_INSTALL_DIR"))
+}
+
+val createReleaseZip by tasks.registering(Zip::class) {
+    val createReleaseDistributable by tasks.getting
+    from(createReleaseDistributable.outputs.files)
+    archiveBaseName = "server-host"
+    archiveVersion = "v$version"
 }
