@@ -21,7 +21,7 @@ class HostEditComponent(
     init {
         val config = HostConfig.readConfig()
         startPortValue = MutableValue(config.startPort)
-        serversValue.addAll(config.servers)
+        serversValue.addAll(config.servers ?: emptyList())
     }
 
     fun cancel() = onCancel()

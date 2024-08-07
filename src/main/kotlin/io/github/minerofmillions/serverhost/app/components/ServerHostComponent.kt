@@ -25,7 +25,7 @@ class ServerHostComponent(
     componentContext: ComponentContext,
 ) : ComponentContext by componentContext {
     private val servers =
-        config.servers.mapIndexed { index, it -> Server.fromConfig(it, config.startPort + index, componentContext) }
+        (config.servers ?: emptyList()).mapIndexed { index, it -> Server.fromConfig(it, config.startPort + index, componentContext) }
 
     private val coroutineContext = coroutineScope(Dispatchers.IO)
     val anyServerActive = servers.map(Server::logShowing).collect().map { list -> list.any(::identity) }
