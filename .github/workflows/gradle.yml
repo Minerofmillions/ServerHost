@@ -36,7 +36,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     permissions:
-      contents: read
+      contents: write
       packages: read
 
     steps:
