@@ -42,6 +42,10 @@ compose.desktop {
     application {
         mainClass = "io.github.minerofmillions.serverhost.app.MainKt"
 
+        buildTypes.release.proguard {
+            configurationFiles.from(project.file("compose-desktop.pro"))
+        }
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "server_host_app"
@@ -52,7 +56,7 @@ compose.desktop {
 }
 
 val installAndCopy by tasks.registering(Copy::class) {
-    val createRuntimeDistributable by tasks.getting
-    from(createRuntimeDistributable.outputs.files)
+    val createReleaseDistributable by tasks.getting
+    from(createReleaseDistributable.outputs.files)
     into(providers.environmentVariable("HOST_INSTALL_DIR"))
 }
